@@ -291,6 +291,8 @@ runners. The workflow is a CI and deployment-readiness baseline; it
 deliberately does not publish to a specific host so this repository can be
 reused across deployment experiments.
 
+![Github CI](./assets/github_ci.png)
+
 ## Deployment notes
 
 The image starts through `src/entrypoint.sh`, which applies migrations and
