@@ -16,14 +16,18 @@ Tech stack and requirements:
 - Database: PostgreSQL
 - Environment and package management: `uv` + `pyproject.toml`
 - Testing: `nox` with `black` + `pylint` + `mypy` + `pytest`
+  - Write unit tests; mock the database by creating en ephemeral PostgrSQL database.
 - CI/CD: use Github Actions for CI/CD, every PR to `main` should trigger a CI/CD pipeline that runs tests
 - Deployment preparation:
-    - The Django webapp should be packed into a Dockerfile
-    - We should have a `docker-compose.yaml` where both the Django image as well as the PostgreSQL database are instantiated and the app is started
+    - The Django webapp should be packed into a Dockerfile.
+    - We should have a `docker-compose.yaml` where both the Django image as well as the PostgreSQL database are instantiated and the app is started.
+    - The docker-compose should also have an `nginx` service which works as reverse proxy; the configuration file and/or scripts should be created and applied to it, too. The `nginx` node is optional: make possible to operate without it.
 
 Further requirements:
 
 - Document the architecture and basic usage in the `README.md` file; use code blocks if necessary, as well as mermaid diagrams.
+- The code should be inside the folder `src`.
+- The tests should be in the folder `tests` at root level, not inside `src`.
 
 Do as follows:
 

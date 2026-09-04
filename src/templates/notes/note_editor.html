@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ note.title }} · Notes{% endblock %}
+
+{% block content %}
+  <section class="editor-shell">
+    <div class="editor-toolbar">
+      <a class="back-link" href="{% url 'notes:list' %}"><span aria-hidden="true">←</span> All notes</a>
+      <div class="editor-actions">
+        <span id="save-status" class="save-status" role="status" aria-live="polite">Saved</span>
+        <a class="button button-secondary" href="{% url 'notes:export' note.pk %}">Export</a>
+        <a class="button button-quiet danger-text" href="{% url 'notes:delete' note.pk %}">Delete</a>
+      </div>
+    </div>
+
+    <form
+      method="post"
+      id="note-form"
+      class="editor-form"
+      data-autosave-url="{% url 'notes:autosave' note.pk %}"
+    >
+      {% csrf_token %}
+      <input id="updated-at" type="hidden" name="updated_at" value="{{ note.updated_at.isoformat }}">
+      <div class="editor-title">
+        {{ form.title }}
+        {{ form.title.errors }}
+      </div>
+      <p class="editor-meta">Last updated <time id="updated-display" datetime="{{ note.updated_at|date:'c' }}">{{ note.updated_at|date:"M j, Y · g:i A" }}</time></p>
+      <div class="editor-body">
+        {{ form.body }}
+        {{ form.body.errors }}
+      </div>
+      {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
+      <div class="editor-footer">
+        <span class="muted">Changes also save when you leave a field.</span>
+        <button class="button button-primary" type="submit">Save</button>
+      </div>
+    </form>
+  </section>
+{% endblock %}
+
+{% block scripts %}<script src="{% static 'js/autosave.js' %}" defer></script>{% endblock %}

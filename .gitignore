@@ -60,6 +60,8 @@ cover/
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
+src/staticfiles/**
+!src/staticfiles/.gitkeep
 
 # Flask stuff:
 instance/
@@ -219,3 +221,4 @@ __marimo__/
 
 # Added
 .vscode
+.DS_Store

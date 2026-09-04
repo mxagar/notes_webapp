@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Create account · Notes{% endblock %}
+
+{% block content %}
+  <section class="auth-card" aria-labelledby="register-heading">
+    <div>
+      <p class="eyebrow">Get started</p>
+      <h1 id="register-heading">Create your account</h1>
+      <p class="muted">A clean space for quick thoughts.</p>
+    </div>
+    <form method="post" class="stacked-form">
+      {% csrf_token %}
+      <div class="field">
+        <label for="{{ form.username.id_for_label }}">Username</label>
+        {{ form.username }}
+        {% if form.username.help_text %}<div class="help-text">{{ form.username.help_text|safe }}</div>{% endif %}
+        {{ form.username.errors }}
+      </div>
+      <div class="field">
+        <label for="{{ form.password1.id_for_label }}">Password</label>
+        {{ form.password1 }}
+        {% if form.password1.help_text %}<div class="help-text">{{ form.password1.help_text|safe }}</div>{% endif %}
+        {{ form.password1.errors }}
+      </div>
+      <div class="field">
+        <label for="{{ form.password2.id_for_label }}">Confirm password</label>
+        {{ form.password2 }}
+        {% if form.password2.help_text %}<div class="help-text">{{ form.password2.help_text|safe }}</div>{% endif %}
+        {{ form.password2.errors }}
+      </div>
+      <button class="button button-primary button-full" type="submit">Create account</button>
+    </form>
+    <p class="auth-alternative">Already registered? <a href="{% url 'login' %}">Log in</a></p>
+  </section>
+{% endblock %}

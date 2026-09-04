@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}My notes{% endblock %}
+
+{% block content %}
+  <section class="notes-header">
+    <div>
+      <p class="eyebrow">Workspace</p>
+      <h1>My notes</h1>
+      <p class="muted">Capture a thought and keep moving.</p>
+    </div>
+    <form method="post" action="{% url 'notes:create' %}">
+      {% csrf_token %}
+      <button class="button button-primary" type="submit"><span aria-hidden="true">＋</span> New note</button>
+    </form>
+  </section>
+
+  {% if notes %}
+    <div class="note-grid">
+      {% for note in notes %}
+        <article class="note-card">
+          <a class="note-card-main" href="{% url 'notes:edit' note.pk %}">
+            <h2>{{ note.title }}</h2>
+            <p>{{ note.body|truncatechars:130|default:"No content yet." }}</p>
+            <time datetime="{{ note.updated_at|date:'c' }}">Updated {{ note.updated_at|date:"M j, Y · g:i A" }}</time>
+          </a>
+          <div class="note-card-actions">
+            <a href="{% url 'notes:export' note.pk %}">Export</a>
+            <a class="danger-link" href="{% url 'notes:delete' note.pk %}">Delete</a>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <section class="empty-state">
+      <div class="empty-icon" aria-hidden="true">✦</div>
+      <h2>No notes yet</h2>
+      <p>Create your first note. It only takes a second.</p>
+      <form method="post" action="{% url 'notes:create' %}">
+        {% csrf_token %}
+        <button class="button button-primary" type="submit">Create a note</button>
+      </form>
+    </section>
+  {% endif %}
+{% endblock %}

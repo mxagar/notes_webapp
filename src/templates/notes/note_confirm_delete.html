@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Delete {{ note.title }} · Notes{% endblock %}
+
+{% block content %}
+  <section class="dialog-card" aria-labelledby="delete-heading">
+    <div class="danger-icon" aria-hidden="true">!</div>
+    <h1 id="delete-heading">Delete “{{ note.title }}”?</h1>
+    <p>This permanently removes the note. This action cannot be undone.</p>
+    <div class="dialog-actions">
+      <a class="button button-secondary" href="{% url 'notes:edit' note.pk %}">Cancel</a>
+      <form method="post">
+        {% csrf_token %}
+        <button class="button button-danger" type="submit">Delete note</button>
+      </form>
+    </div>
+  </section>
+{% endblock %}

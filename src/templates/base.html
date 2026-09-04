@@ -1,0 +1,37 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A simple private notes application">
+    <title>{% block title %}Notes{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="{% url 'home' %}" aria-label="Notes home">
+        <span class="brand-mark" aria-hidden="true">N</span>
+        <span>Notes</span>
+      </a>
+      {% if user.is_authenticated %}
+        <div class="account-actions">
+          <span class="username">{{ user.username }}</span>
+          <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button class="button button-quiet" type="submit">Log out</button>
+          </form>
+        </div>
+      {% endif %}
+    </header>
+    <main class="page-shell">
+      {% if messages %}
+        <div class="messages" aria-live="polite">
+          {% for message in messages %}<p>{{ message }}</p>{% endfor %}
+        </div>
+      {% endif %}
+      {% block content %}{% endblock %}
+    </main>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>
