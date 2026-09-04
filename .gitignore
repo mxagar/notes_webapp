@@ -222,3 +222,4 @@ __marimo__/
 # Added
 .vscode
 .DS_Store
+.railway/node_modules/

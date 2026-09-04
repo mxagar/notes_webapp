@@ -1,7 +1,10 @@
 #!/bin/sh
 set -eu
 
-/app/.venv/bin/python src/manage.py migrate --noinput
+if [ "${RUN_MIGRATIONS_ON_STARTUP:-true}" = "true" ]; then
+  /app/.venv/bin/python src/manage.py migrate --noinput
+fi
+
 /app/.venv/bin/python src/manage.py collectstatic --noinput
 
 exec /app/.venv/bin/gunicorn config.wsgi:application \

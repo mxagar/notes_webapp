@@ -32,6 +32,15 @@ CSRF_TRUSTED_ORIGINS = [
     if origin.strip()
 ]
 
+RAILWAY_PUBLIC_DOMAIN = os.getenv("RAILWAY_PUBLIC_DOMAIN", "").strip()
+if RAILWAY_PUBLIC_DOMAIN:
+    if RAILWAY_PUBLIC_DOMAIN not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(RAILWAY_PUBLIC_DOMAIN)
+
+    RAILWAY_PUBLIC_ORIGIN = f"https://{RAILWAY_PUBLIC_DOMAIN}"
+    if RAILWAY_PUBLIC_ORIGIN not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(RAILWAY_PUBLIC_ORIGIN)
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",

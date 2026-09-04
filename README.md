@@ -308,3 +308,46 @@ configuration is mounted read-only by Compose.
 Use a managed secret store, a durable PostgreSQL service, HTTPS, backups, and a
 platform-specific readiness check against `/health/`. Do not use Django's
 development server or the Compose credentials for a public deployment.
+
+## Railway deployment
+
+Railway configuration is defined with the current Infrastructure as Code model
+in [`.railway/railway.ts`](./.railway/railway.ts). It declares a `web` service
+connected to `mxagar/notes_webapp` and a managed `Postgres` service. The web
+service receives its private `DATABASE_URL` through a Railway reference
+variable, runs migrations as a pre-deploy command, and uses `/health/` as its
+deployment health check.
+
+Install the pinned TypeScript authoring dependency and preview the selected
+environment before applying a change:
+
+```bash
+npm --prefix .railway ci
+railway status --json
+railway config plan
+railway config apply
+```
+
+The project uses persistent `dev` and `prod` environments. Apply the same IaC
+file to each environment; its context keeps HSTS disabled in `dev` and enables
+it in `prod`:
+
+```bash
+railway environment link dev
+railway config plan
+railway config apply
+
+railway environment link prod
+railway config plan
+railway config apply
+```
+
+`DJANGO_SECRET_KEY` is intentionally not stored in Git. Create a different
+random value in each Railway environment and preserve it during subsequent IaC
+updates. Railway supplies `RAILWAY_PUBLIC_DOMAIN` after a public domain is
+generated; Django automatically adds that host and its HTTPS origin to
+`ALLOWED_HOSTS` and `CSRF_TRUSTED_ORIGINS`.
+
+Locally, migrations still run from the container entrypoint by default. The
+Railway service sets `RUN_MIGRATIONS_ON_STARTUP=false` because its pre-deploy
+command runs migrations once before the new application deployment starts.
