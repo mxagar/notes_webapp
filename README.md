@@ -348,7 +348,9 @@ updates. Railway supplies `RAILWAY_PUBLIC_DOMAIN` after a public domain is
 generated; Django automatically adds that host and its HTTPS origin to
 `ALLOWED_HOSTS` and `CSRF_TRUSTED_ORIGINS`. In a Railway environment, Django
 also allows `healthcheck.railway.app`, the hostname Railway uses for deployment
-health checks before public traffic is activated.
+health checks before public traffic is activated. Railway's internal probe is
+HTTP, so only `/health/` is exempt from Django's HTTPS redirect while public
+application routes remain HTTPS-only.
 
 Locally, migrations still run from the container entrypoint by default. The
 Railway service sets `RUN_MIGRATIONS_ON_STARTUP=false` because its pre-deploy
