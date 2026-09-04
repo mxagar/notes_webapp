@@ -6,7 +6,8 @@ and manage private plain-text notes. The repository includes the operational
 pieces expected by a real service—PostgreSQL, Gunicorn, migrations, health
 checks, containers, CI, and reproducible quality tooling.
 
-I created this application with GPT 5.6 Sol-High; the initial prompt is [`prompt.md`](./prompt.md).
+I created this application with GPT 5.6 Sol-High; the initial prompt is
+[`prompt.md`](./prompt.md).
 
 The complete product contract is in [SPEC.md](SPEC.md).
 
@@ -29,6 +30,18 @@ The complete product contract is in [SPEC.md](SPEC.md).
 
 ![Note](./assets/note.png)
 
+## Verified baseline
+
+The repository has been exercised as a complete deployment template:
+
+- The production image builds with Python 3.12, Django 5.2 LTS, uv, and Gunicorn.
+- Direct Compose mode starts only PostgreSQL and Django; both become healthy.
+- The optional `proxy` profile adds Nginx and serves pages, health checks, and
+  collected static assets through port 8080.
+- `nginx -t` accepts the mounted reverse-proxy configuration.
+- The full nox pipeline passes, including 24 pytest cases against a disposable
+  PostgreSQL 16 Testcontainer.
+- Black, Pylint, and mypy validate application code and the root test suite.
 
 ## Architecture
 
@@ -59,6 +72,7 @@ The Django source uses a `src/` layout:
 │   └── entrypoint.sh       # migrate, collect assets, start Gunicorn
 ├── .github/workflows/ci.yml
 ├── .env.example            # documented local configuration template
+├── assets/                 # screenshots used by this README
 ├── deploy/nginx/default.conf
 ├── tests/
 │   ├── conftest.py         # ephemeral PostgreSQL and shared pytest fixtures
@@ -133,9 +147,6 @@ Delete the local PostgreSQL volume as well:
 ```bash
 docker compose down --volumes
 ```
-
-The generated `.env` credentials are local-only. Replace them before exposing
-this stack and never commit `.env`.
 
 ## Native development
 
