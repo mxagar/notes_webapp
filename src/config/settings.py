@@ -41,6 +41,9 @@ if RAILWAY_PUBLIC_DOMAIN:
     if RAILWAY_PUBLIC_ORIGIN not in CSRF_TRUSTED_ORIGINS:
         CSRF_TRUSTED_ORIGINS.append(RAILWAY_PUBLIC_ORIGIN)
 
+if os.getenv("RAILWAY_ENVIRONMENT_NAME"):
+    ALLOWED_HOSTS.append("healthcheck.railway.app")
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
