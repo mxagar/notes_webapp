@@ -11,6 +11,23 @@ I created this application with GPT 5.6 Sol-High; the initial prompt is
 
 The complete product contract is in [SPEC.md](SPEC.md).
 
+Table of Contents:
+
+- [Notes Webapp](#notes-webapp)
+  - [Features](#features)
+  - [Verified baseline](#verified-baseline)
+  - [Architecture](#architecture)
+  - [Quick start with Docker](#quick-start-with-docker)
+    - [Direct mode](#direct-mode)
+    - [Optional Nginx proxy](#optional-nginx-proxy)
+  - [Native development](#native-development)
+  - [Configuration](#configuration)
+  - [Tests and quality checks](#tests-and-quality-checks)
+  - [CI/CD](#cicd)
+  - [Deployment notes](#deployment-notes)
+  - [Railway deployment](#railway-deployment)
+
+
 ## Features
 
 - Django authentication with registration, login, and POST-only logout
@@ -329,6 +346,41 @@ service receives its private `DATABASE_URL` through a Railway reference
 variable, runs migrations as a pre-deploy command, and uses `/health/` as its
 deployment health check.
 
+The deployment depends on four related application mechanisms:
+
+- **`collectstatic` and WhiteNoise:** `collectstatic` is a Django management
+  command provided by `django.contrib.staticfiles`, not an additional package.
+  It gathers the application's CSS, JavaScript, images, and other static assets
+  into the configured `STATIC_ROOT` directory. WhiteNoise is the third-party
+  Python package that serves those collected files from the Django container;
+  this project configures its middleware and compressed static-file storage in
+  [`src/config/settings.py`](./src/config/settings.py). WhiteNoise serves
+  application assets, not user-uploaded media.
+- **Database-aware health check:** [`GET /health/`](./src/notes/views.py) runs
+  `SELECT 1` against PostgreSQL and returns `{"status": "ok"}` only when the
+  query succeeds. Railway uses this HTTP 200 response to decide that a new
+  deployment is ready for traffic. It is a deployment readiness check, not a
+  continuous monitoring service.
+- **Proxy-aware HTTPS:** public HTTPS terminates at Railway's edge proxy. The
+  proxy forwards the original scheme in `X-Forwarded-Proto`, and Django's
+  `SECURE_PROXY_SSL_HEADER` setting tells Django to trust `https` in that
+  header. This lets HTTPS redirects, secure cookies, CSRF protection, and HSTS
+  behave correctly without creating redirect loops between Railway and Django.
+- **Database migrations:** Django migration files describe database-schema
+  changes. `manage.py migrate --noinput` applies any unapplied changes to the
+  current environment's PostgreSQL database. This command is unrelated to
+  `collectstatic`: migrations update the database, whereas `collectstatic`
+  prepares files for WhiteNoise.
+
+The Railway release sequence is therefore:
+
+1. Run `manage.py migrate --noinput` as the Railway pre-deploy command.
+2. Start the container and run `manage.py collectstatic --noinput` from
+   [`src/entrypoint.sh`](./src/entrypoint.sh).
+3. Start Gunicorn on Railway's injected `PORT`.
+4. Check `/health/`; after it returns HTTP 200, route traffic to the new
+   deployment.
+
 Install the pinned TypeScript authoring dependency and preview the selected
 environment before applying a change:
 
@@ -355,14 +407,13 @@ railway config apply
 
 `DJANGO_SECRET_KEY` is intentionally not stored in Git. Create a different
 random value in each Railway environment and preserve it during subsequent IaC
-updates. Railway supplies `RAILWAY_PUBLIC_DOMAIN` after a public domain is
-generated; Django automatically adds that host and its HTTPS origin to
-`ALLOWED_HOSTS` and `CSRF_TRUSTED_ORIGINS`. In a Railway environment, Django
-also allows `healthcheck.railway.app`, the hostname Railway uses for deployment
-health checks before public traffic is activated. Railway's internal probe is
-HTTP, so only `/health/` is exempt from Django's HTTPS redirect while public
-application routes remain HTTPS-only.
+updates.
 
 Locally, migrations still run from the container entrypoint by default. The
 Railway service sets `RUN_MIGRATIONS_ON_STARTUP=false` because its pre-deploy
 command runs migrations once before the new application deployment starts.
+Railway supplies `RAILWAY_PUBLIC_DOMAIN` after a public domain is generated;
+Django adds that host and its HTTPS origin to `ALLOWED_HOSTS` and
+`CSRF_TRUSTED_ORIGINS`. It also accepts the `healthcheck.railway.app` probe host
+and exempts only `/health/` from the internal HTTP-to-HTTPS redirect, while
+public application routes remain HTTPS-only.
